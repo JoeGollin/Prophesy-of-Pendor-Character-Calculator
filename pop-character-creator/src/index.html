@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Creator - Prophesy of Pendor</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Prophesy of Pendor Character Calculator</h1>
+    </header>
+    <main>
+        <div class="layout-container">
+            <div class="choices-panel">
+                <section id="background-choices">
+                    <h2>Background</h2>
+                    <div class="choice-group">
+                        <label for="gender">Gender:</label>
+                        <select id="gender" name="gender">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+
+                        <label for="father">Background:</label>
+                        <select id="father" name="father">
+                            <option value="">Select your background...</option>
+                            <!-- Populated by JS -->
+                        </select>
+
+                        <label for="early-life">Early Life:</label>
+                        <select id="early-life" name="early-life">
+                            <option value="">Select your early life...</option>
+                            <!-- Populated by JS -->
+                        </select>
+
+                        <label for="adulthood">Adulthood:</label>
+                        <select id="adulthood" name="adulthood">
+                            <option value="">Select your adulthood...</option>
+                            <!-- Populated by JS -->
+                        </select>
+
+                        <label for="reason">Reason for Adventure:</label>
+                        <select id="reason" name="reason">
+                            <option value="">Select your reason...</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="choice-details">
+                        <h3>Selected Options Details</h3>
+                        <div id="gender-details" class="option-details">
+                            <h4>Gender Effects</h4>
+                            <p id="gender-effects"></p>
+                        </div>
+                        <div id="father-details" class="option-details">
+                            <h4>Background Effects</h4>
+                            <p id="father-effects"></p>
+                        </div>
+                        <div id="early-life-details" class="option-details">
+                            <h4>Early Life Effects</h4>
+                            <p id="early-life-effects"></p>
+                        </div>
+                        <div id="adulthood-details" class="option-details">
+                            <h4>Adulthood Effects</h4>
+                            <p id="adulthood-effects"></p>
+                        </div>
+                        <div id="reason-details" class="option-details">
+                            <h4>Adventure Reason Effects</h4>
+                            <p id="reason-effects"></p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section id="character-stats">
+                    <h2>Character Stats</h2>
+                    <div class="stats-group">
+                        <div class="attributes">
+                            <h3>Attributes</h3>
+                            <ul id="attributes-list">
+                                    <li>Strength: <span id="strength"></span></li>
+                                    <li>Agility: <span id="agility"></span></li>
+                                    <li>Intelligence: <span id="intelligence"></span></li>
+                                    <li>Charisma: <span id="charisma"></span></li>
+                                </ul>
+                            </div>
+                            <div class="skills">
+                                <h3>Skills</h3>
+                                <ul id="skills-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="proficiencies">
+                                <h3>Weapon Proficiencies</h3>
+                                <ul id="proficiencies-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="resources">
+                                <h3>Resources</h3>
+                                <ul id="resources-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="faction-relations">
+                                <h3>Faction Relations</h3>
+                                <ul id="relations-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="bonus-items">
+                                <h3>Starting Items</h3>
+                                <ul id="items-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="mechanics">
+                                <h3>Mechanics</h3>
+                                <ul id="mechanics-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                            <div class="notes">
+                                <h3>Notes</h3>
+                                <ul id="notes-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+    </main>
+    <script src="scripts/app.js"></script>
+</body>
+</html>
