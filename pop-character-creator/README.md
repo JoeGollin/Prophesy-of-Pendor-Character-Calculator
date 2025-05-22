@@ -17,15 +17,19 @@ The Pop Character Creator is a web-based tool designed for players of the "Proph
   - Weapon proficiencies
   - Resources (Gold, Honor, Renown)
   - Faction relations
-  - Starting items and equipment
-- Real-time updates:
-  - Immediate effect preview for each choice
-  - Conditional bonuses based on previous selections
-  - Important gameplay notes and mechanics
-- Visual feedback:
-  - Clear organization of stats and effects
-  - Color-coded sections for easy reading
-  - Detailed breakdown of each choice's impact
+  - Starting items and equipment  - Real-time updates:
+    - Immediate effect preview for each choice
+    - Conditional bonuses based on previous selections
+    - Important gameplay notes and mechanics
+  - Optimization features:
+    - Find the best combination of choices for maximizing any attribute
+    - Optimize for specific skills
+    - Optimize for weapon proficiencies
+    - Automatic application of optimal choices
+  - Visual feedback:
+    - Clear organization of stats and effects
+    - Color-coded sections for easy reading
+    - Detailed breakdown of each choice's impact
 
 ## Project Structure
 ```

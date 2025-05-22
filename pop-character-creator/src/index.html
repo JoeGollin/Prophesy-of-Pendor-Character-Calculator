@@ -11,6 +11,68 @@
         <h1>Prophesy of Pendor Character Calculator</h1>
     </header>
     <main>
+        <section id="attribute-optimizer">
+            <div class="optimizer-container">
+                <div class="optimizer-controls">
+                    <div class="optimizer-select">
+                        <label for="optimize-attribute">Optimize for Attribute:</label>
+                        <select id="optimize-attribute" name="optimize-attribute">
+                            <option value="">Select an attribute...</option>
+                            <option value="Strength">Strength</option>
+                            <option value="Agility">Agility</option>
+                            <option value="Intelligence">Intelligence</option>
+                            <option value="Charisma">Charisma</option>
+                        </select>
+                    </div>
+                    <div class="optimizer-select">
+                        <label for="optimize-skill">Or Skill:</label>
+                        <select id="optimize-skill" name="optimize-skill">
+                            <option value="">Select a skill...</option>
+                            <option value="Power Strike">Power Strike</option>
+                            <option value="Power Draw">Power Draw</option>
+                            <option value="Power Throw">Power Throw</option>
+                            <option value="Athletics">Athletics</option>
+                            <option value="Riding">Riding</option>
+                            <option value="Horse Archery">Horse Archery</option>
+                            <option value="Shield">Shield</option>
+                            <option value="Weapon Master">Weapon Master</option>
+                            <option value="Ironflesh">Ironflesh</option>
+                            <option value="Tactics">Tactics</option>
+                            <option value="Pathfinding">Pathfinding</option>
+                            <option value="Spotting">Spotting</option>
+                            <option value="Inventory Management">Inventory Management</option>
+                            <option value="Wound Treatment">Wound Treatment</option>
+                            <option value="Surgery">Surgery</option>
+                            <option value="First Aid">First Aid</option>
+                            <option value="Engineer">Engineer</option>
+                            <option value="Persuasion">Persuasion</option>
+                            <option value="Prisoner Management">Prisoner Management</option>
+                            <option value="Leadership">Leadership</option>
+                            <option value="Trade">Trade</option>
+                            <option value="Looting">Looting</option>
+                            <option value="Tracking">Tracking</option>
+                            <option value="Trainer">Trainer</option>
+                        </select>
+                    </div>
+                    <div class="optimizer-select">
+                        <label for="optimize-proficiency">Or Weapon Proficiency:</label>
+                        <select id="optimize-proficiency" name="optimize-proficiency">
+                            <option value="">Select a proficiency...</option>
+                            <option value="One Handed Weapons">One Handed Weapons</option>
+                            <option value="Two Handed Weapons">Two Handed Weapons</option>
+                            <option value="Polearms">Polearms</option>
+                            <option value="Archery">Archery</option>
+                            <option value="Crossbows">Crossbows</option>
+                            <option value="Throwing">Throwing</option>
+                        </select>
+                    </div>
+                    <button id="find-best-options" class="optimize-button">Find Best Options</button>
+                </div>
+                <div id="optimization-result" class="optimization-result">
+                    <!-- Will show the total bonus for the selected attribute -->
+                </div>
+            </div>
+        </section>
         <div class="layout-container">
             <div class="choices-panel">
                 <section id="background-choices">

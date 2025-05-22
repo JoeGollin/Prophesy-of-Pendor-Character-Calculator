@@ -607,6 +607,14 @@ function updateNotesList(notes) {
 function initializeForm() {
     if (!characterData) return;
     
+    // Add event listener for gender change
+    document.getElementById('gender').addEventListener('change', function(e) {
+        populateDropdowns(e.target.value);
+    });
+    
+    // Initial population based on default gender
+    populateDropdowns(document.getElementById('gender').value);
+    
     // Add event listeners for all select elements
     document.getElementById('gender').addEventListener('change', 
         (e) => updateOptionDetails(e.target, 'gender'));
@@ -994,5 +1002,367 @@ function updateStatsDisplay(stats) {
     }
 }
 
-// Initialize when the page loads
-document.addEventListener('DOMContentLoaded', loadCharacterData);
+// Function to find the best options for a given attribute
+function findBestOptionsForAttribute(attributeName) {
+    if (!characterData) return null;
+    
+    // Helper function to get attribute bonus from an option
+    function getAttributeBonus(option, stage) {
+        let total = 0;
+        
+        // Check direct attributes
+        if (option.attributes && option.attributes[attributeName]) {
+            total += option.attributes[attributeName];
+        }
+        
+        // Check base attributes
+        if (option.base && option.base.attributes && option.base.attributes[attributeName]) {
+            total += option.base.attributes[attributeName];
+        }
+        
+        return total;
+    }
+    
+    // Find best gender
+    let bestGender = 'male';
+    let bestGenderBonus = 0;
+    const maleBonus = characterData.gender_stats.male.attributes[attributeName] || 0;
+    const femaleBonus = characterData.gender_stats.female_custom_faces.attributes[attributeName] || 0;
+    if (femaleBonus > maleBonus) {
+        bestGender = 'female';
+        bestGenderBonus = femaleBonus;
+    } else {
+        bestGenderBonus = maleBonus;
+    }
+    
+    // Find best background (stage 1)
+    let bestBackground = '';
+    let bestBackgroundBonus = -999;
+    characterData.stage_1_options.forEach(option => {
+        // Check gender requirements
+        if (option.requirements && option.requirements.gender && 
+            option.requirements.gender !== bestGender) {
+            return;
+        }
+        const bonus = getAttributeBonus(option);
+        if (bonus > bestBackgroundBonus) {
+            bestBackgroundBonus = bonus;
+            bestBackground = option.id;
+        }
+    });
+    
+    // Find best early life (stage 2)
+    let bestEarlyLife = '';
+    let bestEarlyLifeBonus = -999;
+    characterData.stage_2_options.forEach(option => {
+        const bonus = getAttributeBonus(option);
+        if (bonus > bestEarlyLifeBonus) {
+            bestEarlyLifeBonus = bonus;
+            bestEarlyLife = option.id;
+        }
+    });
+    
+    // Find best adulthood (stage 3)
+    let bestAdulthood = '';
+    let bestAdulthoodBonus = -999;
+    characterData.stage_3_options.forEach(option => {
+        // Check gender restrictions
+        if (option.gender_restriction && option.gender_restriction !== bestGender) {
+            return;
+        }
+        const bonus = getAttributeBonus(option);
+        if (bonus > bestAdulthoodBonus) {
+            bestAdulthoodBonus = bonus;
+            bestAdulthood = option.id;
+        }
+    });
+    
+    // Find best reason (stage 4)
+    let bestReason = '';
+    let bestReasonBonus = -999;
+    characterData.stage_4_options.forEach(option => {
+        let bonus = getAttributeBonus(option);
+        
+        // Check conditional bonuses
+        if (option.conditional_bonuses) {
+            if (option.conditional_bonuses[bestBackground]) {
+                bonus += getAttributeBonus(option.conditional_bonuses[bestBackground]);
+            }
+            if (option.conditional_bonuses[bestAdulthood]) {
+                bonus += getAttributeBonus(option.conditional_bonuses[bestAdulthood]);
+            }
+        }
+        
+        if (bonus > bestReasonBonus) {
+            bestReasonBonus = bonus;
+            bestReason = option.id;
+        }
+    });
+    
+    // Calculate total bonus
+    const totalBonus = bestGenderBonus + bestBackgroundBonus + 
+                      bestEarlyLifeBonus + bestAdulthoodBonus + bestReasonBonus;
+    
+    return {
+        gender: bestGender,
+        background: bestBackground,
+        earlyLife: bestEarlyLife,
+        adulthood: bestAdulthood,
+        reason: bestReason,
+        totalBonus: totalBonus
+    };
+}
+
+// Function to populate dropdowns based on gender
+function populateDropdowns(gender) {
+    // Populate background options
+    populateBackgroundOptions(gender);
+    
+    // Populate early life options
+    populateEarlyLifeOptions();
+    
+    // Populate adulthood options
+    populateAdulthoodOptions(gender);
+    
+    // Populate reason options
+    populateReasonOptions();
+}
+
+// Function to find the best options for a given attribute, skill, or weapon proficiency
+function findBestOptions(type, name) {
+    if (!characterData) return null;
+    
+    // Helper function to get bonus from an option
+    function getBonus(option) {
+        let total = 0;
+        
+        switch(type) {
+            case 'attribute':
+                // Check direct attributes
+                if (option.attributes && option.attributes[name]) {
+                    total += option.attributes[name];
+                }
+                // Check base attributes
+                if (option.base && option.base.attributes && option.base.attributes[name]) {
+                    total += option.base.attributes[name];
+                }
+                break;
+            
+            case 'skill':
+                // Check direct skills
+                if (option.skills && option.skills[name]) {
+                    total += option.skills[name];
+                }
+                // Check base skills
+                if (option.base && option.base.skills && option.base.skills[name]) {
+                    total += option.base.skills[name];
+                }
+                break;
+            
+            case 'proficiency':
+                // Check direct weapon proficiencies
+                if (option.weapon_proficiencies && option.weapon_proficiencies[name]) {
+                    total += option.weapon_proficiencies[name];
+                }
+                // Check base weapon proficiencies
+                if (option.base && option.base.weapon_proficiencies && option.base.weapon_proficiencies[name]) {
+                    total += option.base.weapon_proficiencies[name];
+                }
+                break;
+        }
+        
+        return total;
+    }
+    
+    // Find best gender (only relevant for attributes)
+    let bestGender = 'male';
+    let bestGenderBonus = 0;
+    if (type === 'attribute') {
+        const maleBonus = characterData.gender_stats.male.attributes[name] || 0;
+        const femaleBonus = characterData.gender_stats.female_custom_faces.attributes[name] || 0;
+        if (femaleBonus > maleBonus) {
+            bestGender = 'female';
+            bestGenderBonus = femaleBonus;
+        } else {
+            bestGenderBonus = maleBonus;
+        }
+    }
+    
+    // Find best options for each stage
+    let bestBackground = '';
+    let bestBackgroundBonus = -999;
+    let bestEarlyLife = '';
+    let bestEarlyLifeBonus = -999;
+    let bestAdulthood = '';
+    let bestAdulthoodBonus = -999;
+    let bestReason = '';
+    let bestReasonBonus = -999;
+
+    // Background (stage 1)
+    characterData.stage_1_options.forEach(option => {
+        if (option.requirements && option.requirements.gender && 
+            option.requirements.gender !== bestGender) {
+            return;
+        }
+        const bonus = getBonus(option);
+        if (bonus > bestBackgroundBonus) {
+            bestBackgroundBonus = bonus;
+            bestBackground = option.id;
+        }
+    });
+    
+    // Early Life (stage 2)
+    characterData.stage_2_options.forEach(option => {
+        const bonus = getBonus(option);
+        if (bonus > bestEarlyLifeBonus) {
+            bestEarlyLifeBonus = bonus;
+            bestEarlyLife = option.id;
+        }
+    });
+    
+    // Adulthood (stage 3)
+    characterData.stage_3_options.forEach(option => {
+        if (option.gender_restriction && option.gender_restriction !== bestGender) {
+            return;
+        }
+        const bonus = getBonus(option);
+        if (bonus > bestAdulthoodBonus) {
+            bestAdulthoodBonus = bonus;
+            bestAdulthood = option.id;
+        }
+    });
+    
+    // Reason (stage 4)
+    characterData.stage_4_options.forEach(option => {
+        let bonus = getBonus(option);
+        
+        // Check conditional bonuses
+        if (option.conditional_bonuses) {
+            if (option.conditional_bonuses[bestBackground]) {
+                bonus += getBonus(option.conditional_bonuses[bestBackground]);
+            }
+            if (option.conditional_bonuses[bestAdulthood]) {
+                bonus += getBonus(option.conditional_bonuses[bestAdulthood]);
+            }
+        }
+        
+        if (bonus > bestReasonBonus) {
+            bestReasonBonus = bonus;
+            bestReason = option.id;
+        }
+    });
+    
+    // Calculate total bonus
+    const totalBonus = bestGenderBonus + bestBackgroundBonus + 
+                      bestEarlyLifeBonus + bestAdulthoodBonus + bestReasonBonus;
+    
+    return {
+        gender: bestGender,
+        background: bestBackground,
+        earlyLife: bestEarlyLife,
+        adulthood: bestAdulthood,
+        reason: bestReason,
+        totalBonus: totalBonus
+    };
+}
+
+// Apply the optimal choices to the UI
+function applyOptimalChoices(choices) {
+    if (!characterData) return;
+
+    // Set gender first
+    const genderSelect = document.getElementById('gender');
+    genderSelect.value = choices.gender;
+
+    // Populate all dropdowns based on the selected gender
+    populateDropdowns(choices.gender);
+
+    // Set values for all dropdowns
+    document.getElementById('father').value = choices.background;
+    document.getElementById('early-life').value = choices.earlyLife;
+    document.getElementById('adulthood').value = choices.adulthood;
+    document.getElementById('reason').value = choices.reason;
+
+    // Trigger change events to update UI
+    ['father', 'early-life', 'adulthood', 'reason'].forEach(id => {
+        const event = new Event('change');
+        document.getElementById(id).dispatchEvent(event);
+    });
+
+    // Update result display
+    const resultDiv = document.getElementById('optimization-result');
+    const attribute = document.getElementById('optimize-attribute').value;
+    const skill = document.getElementById('optimize-skill').value;
+    const statName = attribute || skill;
+    if (resultDiv) {
+        resultDiv.textContent = `Total ${statName} bonus from all choices: +${choices.totalBonus}`;
+    }
+
+    // Update overall stats display
+    updateStats();
+}
+
+// Initialize optimization controls
+function initializeOptimizer() {
+    const optimizeButton = document.getElementById('find-best-options');
+    const attributeSelect = document.getElementById('optimize-attribute');
+    const skillSelect = document.getElementById('optimize-skill');
+    const proficiencySelect = document.getElementById('optimize-proficiency');
+    
+    if (optimizeButton) {
+        optimizeButton.addEventListener('click', () => {
+            const attribute = attributeSelect.value;
+            const skill = skillSelect.value;
+            const proficiency = proficiencySelect.value;
+            
+            // Check that only one option is selected
+            const selectedCount = [attribute, skill, proficiency].filter(x => x).length;
+            if (selectedCount === 0) {
+                alert('Please select either an attribute, skill, or weapon proficiency to optimize for.');
+                return;
+            }
+            if (selectedCount > 1) {
+                alert('Please select only one stat to optimize for (attribute, skill, or weapon proficiency).');
+                return;
+            }
+            
+            let type, name;
+            if (attribute) {
+                type = 'attribute';
+                name = attribute;
+            } else if (skill) {
+                type = 'skill';
+                name = skill;
+            } else {
+                type = 'proficiency';
+                name = proficiency;
+            }
+            
+            const bestChoices = findBestOptions(type, name);
+            if (bestChoices) {
+                applyOptimalChoices(bestChoices);
+            }
+        });
+    }
+    
+    // Make dropdowns mutually exclusive
+    const dropdowns = [attributeSelect, skillSelect, proficiencySelect];
+    dropdowns.forEach(select => {
+        select.addEventListener('change', () => {
+            if (select.value) {
+                dropdowns.forEach(other => {
+                    if (other !== select) other.value = '';
+                });
+            }
+        });
+    });
+}
+
+// On window load
+window.onload = async function() {
+    await loadCharacterData();
+    if (characterData) {
+        initializeForm();
+        initializeOptimizer();
+    }
+};
