@@ -1128,7 +1128,7 @@ function populateDropdowns(gender) {
     populateReasonOptions();
 }
 
-// Function to find the best options for a given attribute, skill, or weapon proficiency
+// Function to find the best options for a given attribute, skill, weapon proficiency, or resource
 function findBestOptions(type, name) {
     if (!characterData) return null;
     
@@ -1138,33 +1138,54 @@ function findBestOptions(type, name) {
         
         switch(type) {
             case 'attribute':
-                // Check direct attributes
-                if (option.attributes && option.attributes[name]) {
-                    total += option.attributes[name];
-                }
-                // Check base attributes
-                if (option.base && option.base.attributes && option.base.attributes[name]) {
-                    total += option.base.attributes[name];
+                if (name === 'Gold' || name === 'Honor' || name === 'Renown') {
+                    // Handle resources
+                    if (option.resources && option.resources[name]) {
+                        total += option.resources[name];
+                    }
+                    // Check conditional bonuses for resources
+                    if (option.conditional_bonuses) {
+                        Object.values(option.conditional_bonuses).forEach(bonus => {
+                            if (bonus.resources && bonus.resources[name]) {
+                                total += bonus.resources[name];
+                            }
+                            if (bonus.attributes && bonus.attributes[name]) {
+                                total += bonus.attributes[name];
+                            }
+                        });
+                    }
+                    // Check base resources
+                    if (option.base && option.base.resources && option.base.resources[name]) {
+                        total += option.base.resources[name];
+                    }
+                    // Check base attributes (for Honor/Renown in conditional bonuses)
+                    if (option.base && option.base.attributes && option.base.attributes[name]) {
+                        total += option.base.attributes[name];
+                    }
+                } else {
+                    // Handle regular attributes
+                    if (option.attributes && option.attributes[name]) {
+                        total += option.attributes[name];
+                    }
+                    if (option.base && option.base.attributes && option.base.attributes[name]) {
+                        total += option.base.attributes[name];
+                    }
                 }
                 break;
             
             case 'skill':
-                // Check direct skills
                 if (option.skills && option.skills[name]) {
                     total += option.skills[name];
                 }
-                // Check base skills
                 if (option.base && option.base.skills && option.base.skills[name]) {
                     total += option.base.skills[name];
                 }
                 break;
             
             case 'proficiency':
-                // Check direct weapon proficiencies
                 if (option.weapon_proficiencies && option.weapon_proficiencies[name]) {
                     total += option.weapon_proficiencies[name];
                 }
-                // Check base weapon proficiencies
                 if (option.base && option.base.weapon_proficiencies && option.base.weapon_proficiencies[name]) {
                     total += option.base.weapon_proficiencies[name];
                 }
@@ -1174,10 +1195,10 @@ function findBestOptions(type, name) {
         return total;
     }
     
-    // Find best gender (only relevant for attributes)
+    // Find best gender (only relevant for regular attributes)
     let bestGender = 'male';
     let bestGenderBonus = 0;
-    if (type === 'attribute') {
+    if (type === 'attribute' && !['Gold', 'Honor', 'Renown'].includes(name)) {
         const maleBonus = characterData.gender_stats.male.attributes[name] || 0;
         const femaleBonus = characterData.gender_stats.female_custom_faces.attributes[name] || 0;
         if (femaleBonus > maleBonus) {
@@ -1251,6 +1272,11 @@ function findBestOptions(type, name) {
             bestReason = option.id;
         }
     });
+    
+    // Add base resources for Gold, Honor, and Renown
+    if (['Gold', 'Honor', 'Renown'].includes(name)) {
+        bestGenderBonus = characterData.base_stats.resources[name] || 0;
+    }
     
     // Calculate total bonus
     const totalBonus = bestGenderBonus + bestBackgroundBonus + 
@@ -1358,11 +1384,203 @@ function initializeOptimizer() {
     });
 }
 
+// Initialize target attributes feature
+function initializeTargetAttributes() {
+    const findClosestButton = document.getElementById('find-closest-match');
+    if (!findClosestButton) return;
+
+    findClosestButton.addEventListener('click', () => {
+        const targetAttributes = {
+            Strength: parseInt(document.getElementById('target-strength').value) || 6,
+            Agility: parseInt(document.getElementById('target-agility').value) || 5,
+            Intelligence: parseInt(document.getElementById('target-intelligence').value) || 4,
+            Charisma: parseInt(document.getElementById('target-charisma').value) || 5
+        };
+
+        const bestChoices = findClosestAttributeMatch(targetAttributes);
+        if (bestChoices) {
+            // Apply the choices to the UI
+            applyOptimalChoices({
+                gender: bestChoices.gender,
+                background: bestChoices.background,
+                earlyLife: bestChoices.earlyLife,
+                adulthood: bestChoices.adulthood,
+                reason: bestChoices.reason
+            });
+
+            // Show the results
+            const resultDiv = document.getElementById('target-result');
+            if (resultDiv) {
+                // First update the actual character choices and stats
+                updateStats();
+                
+                // Now show the comparison between target and actual
+                const finalStats = bestChoices.finalStats;
+                const targetStats = bestChoices.targetStats;
+                
+                let resultHTML = '<h4>Target vs Actual Attributes:</h4>';
+                resultHTML += '<div class="attribute-comparison">';
+                ['Strength', 'Agility', 'Intelligence', 'Charisma'].forEach(attr => {
+                    const actualValue = parseInt(document.getElementById(attr.toLowerCase()).textContent);
+                    const targetValue = targetStats[attr];
+                    const diff = actualValue - targetValue;
+                    const diffClass = diff === 0 ? 'match' : (diff > 0 ? 'above' : 'below');
+                    resultHTML += `
+                        <div class="attribute">
+                            <span>${attr}: ${actualValue} / Target: ${targetValue}</span>
+                            <span class="${diffClass}">(${diff >= 0 ? '+' : ''}${diff} from target)</span>
+                        </div>`;
+                });
+                resultHTML += '</div>';
+                
+                resultDiv.innerHTML = resultHTML;
+            }
+        }
+    });
+
+    // Set initial values from base stats
+    if (characterData && characterData.base_stats) {
+        document.getElementById('target-strength').value = characterData.base_stats.attributes.Strength;
+        document.getElementById('target-agility').value = characterData.base_stats.attributes.Agility;
+        document.getElementById('target-intelligence').value = characterData.base_stats.attributes.Intelligence;
+        document.getElementById('target-charisma').value = characterData.base_stats.attributes.Charisma;
+    }
+}
+
 // On window load
 window.onload = async function() {
     await loadCharacterData();
     if (characterData) {
         initializeForm();
         initializeOptimizer();
+        initializeTargetAttributes();
     }
 };
+
+// Function to find choices that result in closest match to target attributes
+function findClosestAttributeMatch(targetAttributes) {
+    if (!characterData) return null;
+
+    // Helper function to get total attributes for a given set of choices
+    function calculateTotalAttributes(gender, background, earlyLife, adulthood, reason) {
+        let total = { ...characterData.base_stats.attributes };
+
+        // Add gender bonuses
+        const genderStats = gender === 'male' ? 
+            characterData.gender_stats.male : 
+            characterData.gender_stats.female_custom_faces;
+        
+        if (genderStats.attributes) {
+            Object.entries(genderStats.attributes).forEach(([attr, value]) => {
+                total[attr] = (total[attr] || 0) + value;
+            });
+        }
+
+        // Add background bonuses
+        const backgroundChoice = characterData.stage_1_options.find(o => o.id === background);
+        if (backgroundChoice && backgroundChoice.attributes) {
+            Object.entries(backgroundChoice.attributes).forEach(([attr, value]) => {
+                total[attr] = (total[attr] || 0) + value;
+            });
+        }
+
+        // Add early life bonuses
+        const earlyLifeChoice = characterData.stage_2_options.find(o => o.id === earlyLife);
+        if (earlyLifeChoice && earlyLifeChoice.attributes) {
+            Object.entries(earlyLifeChoice.attributes).forEach(([attr, value]) => {
+                total[attr] = (total[attr] || 0) + value;
+            });
+        }
+
+        // Add adulthood bonuses
+        const adulthoodChoice = characterData.stage_3_options.find(o => o.id === adulthood);
+        if (adulthoodChoice && adulthoodChoice.attributes) {
+            Object.entries(adulthoodChoice.attributes).forEach(([attr, value]) => {
+                total[attr] = (total[attr] || 0) + value;
+            });
+        }
+
+        // Add reason bonuses
+        const reasonChoice = characterData.stage_4_options.find(o => o.id === reason);
+        if (reasonChoice) {
+            // Add base attributes
+            if (reasonChoice.base && reasonChoice.base.attributes) {
+                Object.entries(reasonChoice.base.attributes).forEach(([attr, value]) => {
+                    total[attr] = (total[attr] || 0) + value;
+                });
+            }
+
+            // Add conditional bonuses
+            if (reasonChoice.conditional_bonuses) {
+                if (reasonChoice.conditional_bonuses[background] && 
+                    reasonChoice.conditional_bonuses[background].attributes) {
+                    Object.entries(reasonChoice.conditional_bonuses[background].attributes).forEach(([attr, value]) => {
+                        total[attr] = (total[attr] || 0) + value;
+                    });
+                }
+                if (reasonChoice.conditional_bonuses[adulthood] && 
+                    reasonChoice.conditional_bonuses[adulthood].attributes) {
+                    Object.entries(reasonChoice.conditional_bonuses[adulthood].attributes).forEach(([attr, value]) => {
+                        total[attr] = (total[attr] || 0) + value;
+                    });
+                }
+            }
+        }
+
+        return total;
+    }
+
+    // Helper function to calculate Manhattan distance between two attribute sets
+    function calculateDistance(attrs1, attrs2) {
+        return Math.abs(attrs1.Strength - attrs2.Strength) +
+               Math.abs(attrs1.Agility - attrs2.Agility) +
+               Math.abs(attrs1.Intelligence - attrs2.Intelligence) +
+               Math.abs(attrs1.Charisma - attrs2.Charisma);
+    }
+
+    let bestChoices = null;
+    let bestDistance = Infinity;
+    let bestStats = null;
+
+    // Try each gender
+    ['male', 'female'].forEach(gender => {
+        // Try each valid background for this gender
+        characterData.stage_1_options.forEach(background => {
+            if (background.requirements?.gender && background.requirements.gender !== gender) return;
+
+            characterData.stage_2_options.forEach(earlyLife => {
+                characterData.stage_3_options.forEach(adulthood => {
+                    if (adulthood.gender_restriction && adulthood.gender_restriction !== gender) return;
+
+                    characterData.stage_4_options.forEach(reason => {
+                        const currentStats = calculateTotalAttributes(
+                            gender,
+                            background.id,
+                            earlyLife.id,
+                            adulthood.id,
+                            reason.id
+                        );
+
+                        const distance = calculateDistance(currentStats, targetAttributes);
+
+                        if (distance < bestDistance) {
+                            bestDistance = distance;
+                            bestStats = currentStats;
+                            bestChoices = {
+                                gender: gender,
+                                background: background.id,
+                                earlyLife: earlyLife.id,
+                                adulthood: adulthood.id,
+                                reason: reason.id,
+                                finalStats: currentStats,
+                                targetStats: targetAttributes
+                            };
+                        }
+                    });
+                });
+            });
+        });
+    });
+
+    return bestChoices;
+}

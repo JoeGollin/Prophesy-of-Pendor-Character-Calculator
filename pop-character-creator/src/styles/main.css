@@ -368,6 +368,83 @@ select {
     min-height: 1.5em;
 }
 
+/* Target attributes section styles */
+#target-attributes {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: rgba(255, 223, 0, 0.1);
+    border: 1px solid #ffd700;
+    border-radius: 4px;
+}
+
+.target-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.target-container h3 {
+    margin: 0 0 1rem;
+    color: #ffd700;
+    text-align: center;
+}
+
+.target-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.attribute-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.attribute-input label {
+    font-weight: bold;
+    color: #e6c300;
+}
+
+.attribute-input input {
+    width: 80px;
+    padding: 0.5rem;
+    border: 1px solid #ffd700;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
+/* Attribute comparison styles */
+.attribute-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.attribute-comparison .attribute {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.attribute-comparison .match {
+    color: #4caf50;
+}
+
+.attribute-comparison .above {
+    color: #2196f3;
+}
+
+.attribute-comparison .below {
+    color: #f44336;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1400px) {
     .layout-container {
