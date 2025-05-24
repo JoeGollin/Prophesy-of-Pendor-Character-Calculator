@@ -47,8 +47,9 @@ pop-character-creator/
 ## 🚀 Getting Started
 
 1. Clone repo
-2. cd  
-2. Open `src/index.html` in a modern web browser
+2. In /pop-character-creator run command: 'npm install -g http-server'
+3. run command: 'http-server -c-1'      
+2. Open `src/index.html` in a modern web browser or go to http://127.0.0.1:8080
 3. Start creating your perfect Pendor character!
 
 ## 🎮 Usage
